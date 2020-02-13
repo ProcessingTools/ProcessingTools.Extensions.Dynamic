@@ -298,6 +298,10 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
 
             // Assert
             Assert.IsNotNull(type);
+            Assert.IsTrue(type.IsClass);
+            Assert.IsFalse(type.IsAbstract);
+            Assert.IsFalse(type.IsSealed);
+            Assert.IsFalse(type.IsGenericType);
             Assert.AreEqual(typeName, type.Name);
 
             TestContext.WriteLine(type.Name);
@@ -324,6 +328,10 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
 
             // Assert
             Assert.IsNotNull(type);
+            Assert.IsTrue(type.IsClass);
+            Assert.IsFalse(type.IsAbstract);
+            Assert.IsFalse(type.IsSealed);
+            Assert.IsFalse(type.IsGenericType);
             Assert.AreEqual(typeName, type.Name);
             Assert.AreEqual(1, type.GetProperties().Length);
             Assert.AreEqual(propertyName, type.GetProperties()[0].Name);
@@ -356,6 +364,10 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
 
             // Assert
             Assert.IsNotNull(type);
+            Assert.IsTrue(type.IsClass);
+            Assert.IsFalse(type.IsAbstract);
+            Assert.IsFalse(type.IsSealed);
+            Assert.IsFalse(type.IsGenericType);
             Assert.AreEqual(typeName, type.Name);
             Assert.AreEqual(2, type.GetProperties().Length);
             Assert.AreEqual(property1Name, type.GetProperties()[0].Name);
@@ -365,6 +377,46 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
 
             TestContext.WriteLine(type.Name);
             TestContext.WriteLine(type.FullName);
+        }
+
+        /// <summary>
+        /// <see cref="PocoTypeBuilder"/> Add Property After Create Type Should Throw <see cref="InvalidOperationException"/>.
+        /// </summary>
+        [Test(TestOf = typeof(PocoTypeBuilder))]
+        public void PocoTypeBuilder_AddPropertyAfterCreateType_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            PocoModuleBuilder pocoModuleBuilder = new PocoModuleBuilder();
+            ModuleBuilder moduleBuilder = pocoModuleBuilder.ModuleBuilder;
+            string typeName = "MyType";
+            PocoTypeBuilder pocoTypeBuilder = new PocoTypeBuilder(moduleBuilder, typeName);
+
+            string property1Name = "ID";
+            Type property1Type = typeof(int);
+
+            string property2Name = "Name";
+            Type property2Type = typeof(string);
+
+            // Act + Assert
+            pocoTypeBuilder.AddProperty(property1Name, property1Type);
+            var type = pocoTypeBuilder.CreateType();
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                pocoTypeBuilder.AddProperty(property2Name, property2Type);
+            });
+
+            // Assert
+            Assert.IsNotNull(type);
+            Assert.IsTrue(type.IsClass);
+            Assert.IsFalse(type.IsAbstract);
+            Assert.IsFalse(type.IsSealed);
+            Assert.IsFalse(type.IsGenericType);
+            Assert.AreEqual(typeName, type.Name);
+
+            Assert.AreEqual(1, type.GetProperties().Length);
+            Assert.AreEqual(property1Name, type.GetProperties()[0].Name);
+            Assert.AreEqual(property1Type, type.GetProperties()[0].PropertyType);
         }
     }
 }
