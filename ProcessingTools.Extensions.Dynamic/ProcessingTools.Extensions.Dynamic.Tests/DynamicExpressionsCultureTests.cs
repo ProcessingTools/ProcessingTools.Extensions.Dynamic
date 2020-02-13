@@ -2,7 +2,7 @@
 // Copyright (c) 2020 ProcessingTools. All rights reserved.
 // </copyright>
 
-namespace ProcessingTools.Extensions.Linq.Tests
+namespace ProcessingTools.Extensions.Dynamic.Tests
 {
     using System;
     using System.Globalization;
