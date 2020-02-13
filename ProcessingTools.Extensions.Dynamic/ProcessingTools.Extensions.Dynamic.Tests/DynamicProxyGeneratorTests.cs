@@ -7,7 +7,7 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
     using NUnit.Framework;
 
     /// <summary>
-    /// Tests for <see cref="ProcessingTools.Extensions.Dynamic.DynamicProxyGenerator"/>.
+    /// Tests for <see cref="DynamicProxyGenerator"/>.
     /// </summary>
     [TestFixture]
     public class DynamicProxyGeneratorTests
@@ -15,7 +15,8 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
         /// <summary>
         /// Model interface for tests.
         /// </summary>
-        private interface IMyTestModel
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Test type")]
+        public interface IMyTestModel
         {
             /// <summary>
             /// Gets or sets the ID of the test model.
@@ -29,13 +30,13 @@ namespace ProcessingTools.Extensions.Dynamic.Tests
         }
 
         /// <summary>
-        /// <see cref="ProcessingTools.Extensions.Dynamic.DynamicProxyGenerator"/>.GetInstanceFor should work.
+        /// <see cref="DynamicProxyGenerator"/>.GetFakeInstanceFor should work.
         /// </summary>
         [Test(TestOf = typeof(DynamicProxyGenerator))]
-        public void DynamicProxyGenerator_GetInstanceFor_ShouldWork()
+        public void DynamicProxyGenerator_GetFakeInstanceFor_ShouldWork()
         {
             // Arrange + Act
-            IMyTestModel instance = DynamicProxyGenerator.GetInstanceFor<IMyTestModel>();
+            IMyTestModel instance = DynamicProxyGenerator.GetFakeInstanceFor<IMyTestModel>();
 
             // Assert
             Assert.IsNotNull(instance);

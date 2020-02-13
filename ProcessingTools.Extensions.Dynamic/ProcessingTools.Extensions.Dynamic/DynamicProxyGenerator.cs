@@ -16,56 +16,68 @@ namespace ProcessingTools.Extensions.Dynamic
     public static class DynamicProxyGenerator
     {
         /// <summary>
-        /// Get instance for specified interface type.
+        /// Get fake instance for specified interface type.
+        /// Fake instance means that methods and properties does not set or get data, but
+        /// the instance implements the specified interface type.
         /// </summary>
-        /// <typeparam name="T">Type to be instantiated.</typeparam>
-        /// <returns>Instance of type T.</returns>
-        public static T GetInstanceFor<T>()
+        /// <typeparam name="T">Interface type to be instantiated.</typeparam>
+        /// <returns>Fake instance of type T.</returns>
+        /// <exception cref="InvalidOperationException">If the type T is not interface.</exception>
+        public static T GetFakeInstanceFor<T>()
         {
             Type typeOfT = typeof(T);
-            var methodInfos = typeOfT.GetMethods();
+            if (!typeOfT.IsInterface)
+            {
+                throw new InvalidOperationException();
+            }
+
             var assemblyName = new AssemblyName("testAssembly");
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("testModule");
+
             var typeBuilder = moduleBuilder.DefineType(typeOfT.Name + "Proxy", TypeAttributes.Public);
-
             typeBuilder.AddInterfaceImplementation(typeOfT);
-            var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Array.Empty<Type>());
-            var iLGenerator = constructorBuilder.GetILGenerator();
-            iLGenerator.EmitWriteLine("Creating Proxy instance");
-            iLGenerator.Emit(OpCodes.Ret);
 
+            var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Array.Empty<Type>());
+            var constructorILGenerator = constructorBuilder.GetILGenerator();
+            constructorILGenerator.EmitWriteLine("Creating Proxy instance");
+            constructorILGenerator.Emit(OpCodes.Ret);
+
+            var methodInfos = typeOfT.GetMethods();
             foreach (var methodInfo in methodInfos)
             {
-                var parameterTypes = methodInfo.GetParameters().Select(p => p.GetType()).ToArray();
+                var parameterTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
                 var returnType = methodInfo.ReturnType;
                 var attributes = MethodAttributes.Public | MethodAttributes.Virtual;
 
-                var methodBuilder = typeBuilder.DefineMethod(methodInfo.Name, attributes: attributes, returnType: returnType, parameterTypes: parameterTypes);
+                var methodBuilder = typeBuilder.DefineMethod(name: methodInfo.Name, attributes: attributes, returnType: returnType, parameterTypes: parameterTypes);
 
-                var methodILGen = methodBuilder.GetILGenerator();
+                var methodILGenerator = methodBuilder.GetILGenerator();
                 if (methodInfo.ReturnType == typeof(void))
                 {
-                    methodILGen.Emit(OpCodes.Ret);
+                    methodILGenerator.Emit(OpCodes.Ret);
                 }
                 else
                 {
                     if (methodInfo.ReturnType.IsValueType || methodInfo.ReturnType.IsEnum)
                     {
                         Type typeOfType = typeof(Type);
-                        MethodInfo getMethod = typeof(Activator).GetMethod(nameof(Activator.CreateInstance), new[] { typeOfType });
-                        LocalBuilder localBuilder = methodILGen.DeclareLocal(methodInfo.ReturnType);
-                        methodILGen.Emit(OpCodes.Ldtoken, localBuilder.LocalType);
-                        methodILGen.Emit(OpCodes.Call, typeOfType.GetMethod(nameof(Type.GetTypeFromHandle)));
-                        methodILGen.Emit(OpCodes.Callvirt, getMethod);
-                        methodILGen.Emit(OpCodes.Unbox_Any, localBuilder.LocalType);
+                        MethodInfo methodGetTypeFromHandle = typeOfType.GetMethod(nameof(Type.GetTypeFromHandle));
+                        MethodInfo methodCreateInstance = typeof(Activator).GetMethod(nameof(Activator.CreateInstance), new[] { typeOfType });
+
+                        LocalBuilder localBuilder = methodILGenerator.DeclareLocal(methodInfo.ReturnType);
+
+                        methodILGenerator.Emit(OpCodes.Ldtoken, localBuilder.LocalType);
+                        methodILGenerator.Emit(OpCodes.Call, methodGetTypeFromHandle);
+                        methodILGenerator.Emit(OpCodes.Callvirt, methodCreateInstance);
+                        methodILGenerator.Emit(OpCodes.Unbox_Any, localBuilder.LocalType);
                     }
                     else
                     {
-                        methodILGen.Emit(OpCodes.Ldnull);
+                        methodILGenerator.Emit(OpCodes.Ldnull);
                     }
 
-                    methodILGen.Emit(OpCodes.Ret);
+                    methodILGenerator.Emit(OpCodes.Ret);
                 }
 
                 typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
