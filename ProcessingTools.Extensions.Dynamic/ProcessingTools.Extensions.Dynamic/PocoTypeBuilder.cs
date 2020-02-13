@@ -36,6 +36,11 @@ namespace ProcessingTools.Extensions.Dynamic
                 throw new ArgumentNullException(nameof(moduleBuilder));
             }
 
+            if (string.IsNullOrEmpty(typeName))
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
             this.typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public);
         }
 
