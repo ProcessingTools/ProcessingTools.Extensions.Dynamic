@@ -9,7 +9,7 @@ namespace ProcessingTools.Extensions.Linq.Tests
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using NUnit.Framework;
-    using ProcessingTools.Extensions.Linq.Dynamic;
+    using ProcessingTools.Extensions.Dynamic;
 
     /// <summary>
     /// Dynamic expressions tests.

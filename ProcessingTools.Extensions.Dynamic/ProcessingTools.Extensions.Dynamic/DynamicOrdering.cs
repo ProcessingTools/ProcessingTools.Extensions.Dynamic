@@ -2,7 +2,7 @@
 // Copyright (c) 2020 ProcessingTools. All rights reserved.
 // </copyright>
 
-namespace ProcessingTools.Extensions.Linq.Dynamic
+namespace ProcessingTools.Extensions.Dynamic
 {
     using System.Linq.Expressions;
 
