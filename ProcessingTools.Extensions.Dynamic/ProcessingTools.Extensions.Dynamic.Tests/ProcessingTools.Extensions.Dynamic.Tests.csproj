@@ -21,7 +21,7 @@
 
     <PackageTags>dynamic, extensions, tests</PackageTags>
 
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
 
     <Copyright>Copyright © 2020 ProcessingTools</Copyright>
   </PropertyGroup>
