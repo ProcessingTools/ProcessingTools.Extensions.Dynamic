@@ -7,6 +7,7 @@ namespace ProcessingTools.Extensions.Dynamic
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -120,14 +121,16 @@ namespace ProcessingTools.Extensions.Dynamic
 
             typeBuilder.AddDefaultConstructor();
 
+            var interfaces = type.GetInterfaces();
+
             // Properties are added as real getters and setters,
             // methods are added as dummy methods.
-            var propertyInfos = type.GetProperties();
+            var propertyInfos = type.GetProperties().Union(interfaces.SelectMany(i => i.GetProperties())).ToArray();
 
             var properties = propertyInfos.ToDictionary(p => p.Name, p => p.PropertyType);
 
             // Filter methods which names starts with get_ or set_ to not add as methods because they are added as properties.
-            MethodInfo[] methods = type.GetMethods();
+            MethodInfo[] methods = type.GetMethods().Union(interfaces.SelectMany(i => i.GetMethods())).ToArray();
             var methodInfos = new List<MethodInfo>(methods.Length);
 
             foreach (var methodInfo in methods)
@@ -189,7 +192,8 @@ namespace ProcessingTools.Extensions.Dynamic
                 throw new InvalidOperationException();
             }
 
-            TypeBuilder typeBuilder = moduleBuilder.DefineType($"ProcessingTools.Extensions.Dynamic.DynamicProxy.{type.Name}Proxy", TypeAttributes.Public);
+            string suffix = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture).ToUpperInvariant();
+            TypeBuilder typeBuilder = moduleBuilder.DefineType($"ProcessingTools.Extensions.Dynamic.DynamicProxy.{type.Name}_{suffix}", TypeAttributes.Public);
             typeBuilder.AddInterfaceImplementation(type);
             return typeBuilder;
         }
