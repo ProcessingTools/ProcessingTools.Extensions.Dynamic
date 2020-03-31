@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.4</Version>
+    <Version>1.0.0</Version>
     <Company>ProcessingTools</Company>
     <Authors>Bozhin Karaivanov</Authors>
     <Description>Extensions for dynamic building of objects in dotnet core</Description>
